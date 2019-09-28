@@ -14,9 +14,9 @@ bool isOperator(char);
 bool isSeparator(char);
 bool isKeyword(const char*);
 
-//enum FsmState { START, ID_BEGIN, ID_INSIDE, ID_END, KEYWORD_END, NUM_BEGIN, NUM_INSIDE, INT_END, REAL_END };
-enum IdentifierState { ID_START, IN_ID, ID_END }; // 4 states for identifier FSM
-enum NumberState { NUM_START, IN_NUM, INT_END, IN_REAL, REAL_END }; // 5 states for integer and real FSM
+enum FsmState { START, ID_START, IN_ID, ID_END, KEYWORD_END, NUM_START, IN_NUM, IN_REAL, INT_END, REAL_END };
+//enum IdentifierState { ID_START, IN_ID, ID_END }; // 4 states for identifier FSM
+//enum NumberState { NUM_START, IN_NUM, INT_END, IN_REAL, REAL_END }; // 5 states for integer and real FSM
 
 char buffer[BUFSIZE]; // holds the buffer of the current lexeme
 char sourceCodeFile[BUFSIZE]; //holds filename of source code to scan with lexer program
@@ -49,89 +49,90 @@ void lexer(void) {
 		exit(1);
 	} else { printf("Opened %s successfully.\n\n", sourceCodeFile); }
 
-	enum IdentifierState currentIdState = ID_START; // declares current ID state variable and initializes to starting state
-	enum NumberState currentNumState = NUM_START; // declares current number state variable and initializes to starting state
+	enum FsmState currentState = START;
+	// enum IdentifierState currentIdState = ID_START; // declares current ID state variable and initializes to starting state
+	// enum NumberState currentNumState = NUM_START; // declares current number state variable and initializes to starting state
 	int i = 0;
 	char ch;
 
 	// use switch statement for FSM.
 	while ((ch = fgetc(fp)) != EOF) {
-			if((isalpha(ch) > 0) || currentIdState == IN_ID) {		//**************************** FSM for identifiers and keywords
-			switch (currentIdState) {
+			//if((isalpha(ch) > 0) || currentIdState == IN_ID) {		//**************************** FSM for identifiers and keywords
+			switch (currentState) {
+				case START:   // 0 - initial identifier state - can go to state 1 id start, or state 2 num start
+					buffer[i++] = ch;
+					if(isalpha(ch) > 0) {
+						currentState = ID_START;
+					}
+				  if (isdigit(ch) > 0) {
+						currentState = NUM_START;
+					}
+					break;
 
-				case ID_START: // initial identifier state - can go to 1st state
-					currentIdState = IN_ID;
+				case ID_START: // 1 - initial identifier state - can go to 2nd state
+					currentState = IN_ID;
 					buffer[i++] = ch;
 					break;
 
-
-				case IN_ID: // state 1 - can go back to 1 or to end
-					if (isalpha(ch) > 0) {
-						currentIdState = IN_ID;
+				case IN_ID: // state 2 - can go back to 2 or to ID end accepting state
+					if (isalpha(ch) > 0 || isdigit(ch) > 0 || ch == '$') {
+						currentState = IN_ID;
 						buffer[i++] = ch;
-					} else { currentIdState = ID_END; }
+					}
+					else { currentState = ID_END; }
+					break;
+
+				case NUM_START: // 3 - initial number state - can go to 4th state in number
+					currentState = IN_NUM;
+					buffer[i++] = ch;
+					break;
+
+				case IN_NUM: // state 4 - can go back to state 4, or state 5 in real number, or state 7 in int end
+					if (isdigit(ch) > 0) {
+						currentState = IN_NUM;
+						buffer[i++] = ch;
+					}
+					else if(ch == '.') {
+						currentState = IN_REAL;
+						buffer[i++] = ch;
+					}
+					else { currentState = INT_END; }
+					break;
+
+				case IN_REAL: // state 5 - can go back to state 5 or state 8 real number end
+					if (isdigit(ch) > 0) {
+						currentState = IN_REAL;
+						buffer[i++] = ch;
+					} else { currentState = REAL_END; }
 					break;
 
 				default:
-					printf("Error: invalid identifier state.\n");
+					printf("Error: invalid state.\n");
 					break;
 				}
-			}
-			if (currentIdState == ID_END) {  // accepting state for identifiers/keywords
-				if (isSeparator(ch) || isOperator(ch)) {
+
+			if (currentState == ID_END) {  // accepting state for identifiers/keywords
+		//		if (isSeparator(ch) || isOperator(ch)) {
 					buffer[i] = '\0';
 					if(isKeyword(buffer)) { //check if string is a keyword or identifier
 						printToken(outputPtr, "KEYWORD", buffer);
 					} else { printToken(outputPtr, "IDENTIFIER", buffer); } // call printToken to print token and lexeme to output file
-					currentIdState = ID_START; 	// set state back to initial state
+					currentState = START; 	// set state back to initial state
 					clearBuffer(buffer); // clears lexeme buffer
 					i = 0;
-				}
-			 }
+		//		}
+			}
 
-			 //***************** FSM for numbers - integer or real
-	 	 	  else if((isdigit(ch) > 0) || currentNumState == IN_NUM || currentNumState == IN_REAL) {
-	 				switch (currentNumState) {
-						case NUM_START: // initial number state - can go to 1st state
-							currentNumState = IN_NUM;
-							buffer[i++] = ch;
-							break;
-
-						case IN_NUM: // state 1 - can go back to state 1, or state 2 integer, or state 3 in real number
-							if (isdigit(ch) > 0) {
-								currentNumState = IN_NUM;
-								buffer[i++] = ch;
-							}
-							else if(ch == '.') {
-								currentNumState = IN_REAL;
-								buffer[i++] = ch;
-							}
-							else { currentNumState = INT_END; }
-							break;
-
-						case IN_REAL: // state 3 - can go to state 4 real number end
-							if (isdigit(ch) > 0) {
-								currentNumState = IN_REAL;
-								buffer[i++] = ch;
-							} else { currentNumState = REAL_END; }
-							break;
-
-						default:
-							printf("Error: invalid number state.\n");
-						  break;
-					}
-				}
-
-				if (currentNumState == INT_END || currentNumState == REAL_END) {
-						buffer[i] = '\0';
-						if (currentNumState == INT_END) {
-							printToken(outputPtr, "INTEGER", buffer);
-						} else { printToken(outputPtr, "REAL", buffer); }
-						currentNumState = NUM_START;
-						clearBuffer(buffer);
-						i = 0;
-						continue;
-				}
+			if (currentState == INT_END || currentState == REAL_END) {
+					buffer[i] = '\0';
+					if (currentState == INT_END) {
+						printToken(outputPtr, "INTEGER", buffer);
+					} else { printToken(outputPtr, "REAL NUMBER", buffer); }
+					currentState = START;
+					clearBuffer(buffer);
+					i = 0;
+					continue;
+			}
 
 		//elseif (isSeparator(ch)) {}
 
