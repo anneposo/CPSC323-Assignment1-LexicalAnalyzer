@@ -72,16 +72,6 @@ void lexer(void) {
 					} else { currentIdState = ID_END; }
 					break;
 
-				// case ID_END: // accepting state for identifiers
-				// 	if (isSeparator(ch) || isOperator(ch)) {
-				// 		buffer[i] = '\0';
-				// 		if(isKeyword(buffer)) {
-				// 			printToken(outputPtr, "KEYWORD", buffer);
-				// 		} else { printToken(outputPtr, "IDENTIFIER", buffer); } // call printToken to print token and lexeme to output file
-				// 		currentIdState = ID_START; 	// set state back to initial state
-				// 		clearBuffer(buffer); // clears lexeme buffer
-				// 	}
-				// 	break;
 				default:
 					printf("Error: invalid identifier state.\n");
 					break;
@@ -140,6 +130,7 @@ void lexer(void) {
 						currentNumState = NUM_START;
 						clearBuffer(buffer);
 						i = 0;
+						continue;
 				}
 
 		//elseif (isSeparator(ch)) {}
@@ -194,7 +185,7 @@ bool isKeyword(const char* buf) {
 
 int main(void) {
 	lexer();
-	printf("Finished.\n");
+	printf("\nFinished.\n");
 
 	return 0;
 }

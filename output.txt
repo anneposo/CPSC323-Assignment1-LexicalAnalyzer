@@ -1,2 +1,3 @@
 KEYWORD 	=	 int
 IDENTIFIER 	=	 test
+INTEGER 	=	 123
