@@ -2,14 +2,22 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h> // for isalnum() and isdigit()
 
 #define BUFSIZE 100
 
-enum FsmState { START, ID_BEGIN, ID_INSIDE, ID_END, KEYWORD_END, NUM_BEGIN, NUM_INSIDE, INT_END, REAL_END }
+void printToken(FILE*, const char*, const char*);
+void clearBuffer(char*);
+void openFile(FILE*);
+void lexer(void);
+bool isOperator(char);
+bool isSeparator(char);
+bool isKeyword(const char*);
+
+//enum FsmState { START, ID_BEGIN, ID_INSIDE, ID_END, KEYWORD_END, NUM_BEGIN, NUM_INSIDE, INT_END, REAL_END };
 enum IdentifierState { ID_START, IN_ID, ID_END, KEYWORD_END, }; // 4 states for identifier FSM
 enum NumberState { NUM_START, IN_NUM, INT_END, DECIMAL, REAL_END }; // 5 states for integer and real FSM
 
-const char* tokens = { "KEYWORD", "IDENTIFIER", "SEPARATOR", "OPERATOR" };
 char buffer[BUFSIZE]; // holds the buffer of the current lexeme
 
 // printToken prints the input token and lexeme in table format to the fp pointing to the output text file
@@ -18,7 +26,7 @@ void printToken(FILE* fp, const char* token, const char* lexeme) {
 	fprintf(fp, "%s\n", lexeme);
 }
 
-void clearBuffer(char buf) {		//clearBuffer clears the buffer containing the current lexeme
+void clearBuffer(char* buf) {		//clearBuffer clears the buffer containing the current lexeme
 	memset(buf, '\0', sizeof(buf));
 }
 
@@ -76,7 +84,7 @@ void lexer(void) {
 					break;
 
 				case KEYWORD_END: // accepting state for keywords
-					printToken("KEYWORD", buffer);  // call printToken to print token and lexeme to output file
+					printToken(fp, "KEYWORD", buffer);  // call printToken to print token and lexeme to output file
 					currentIdState = ID_START;  // set state back to initial state
 					break;
 
@@ -86,28 +94,28 @@ void lexer(void) {
 			}
 		}
 
-		elseif(isdigit(ch) > 0) { 				//***************** FSM for numbers - integer or real
-			switch (currentNumState) {
-				case NUM_START:
-					break;
-
-				case IN_NUM:
-					break;
-
-				case INT_END:
-					break;
-
-				case DECIMAL:
-					break;
-
-				case REAL_END:
-					break;
-
-				default:
-					printf("Error: invalid number state.\n");
-				  break;
-			}
-		}
+		// elseif(isdigit(ch) > 0) { 				//***************** FSM for numbers - integer or real
+		// 	switch (currentNumState) {
+		// 		case NUM_START:
+		// 			break;
+		//
+		// 		case IN_NUM:
+		// 			break;
+		//
+		// 		case INT_END:
+		// 			break;
+		//
+		// 		case DECIMAL:
+		// 			break;
+		//
+		// 		case REAL_END:
+		// 			break;
+		//
+		// 		default:
+		// 			printf("Error: invalid number state.\n");
+		// 		  break;
+		// 	}
+		// }
 
 		//elseif (isSeparator(ch)) {}
 
@@ -117,11 +125,11 @@ void lexer(void) {
 }
 
 bool isOperator(char ch) {
-	const char* operators[] = { "=", "<", ">", "+", "-", "/", "%", "*" }
+	const char* operators[] = { "=", "<", ">", "+", "-", "/", "%", "*" };
 	int match = 0;
 
 	for (int i = 0; i < 8; i++) {
-		if (strcmp(operators[i], ch) == 0) {
+		if (strchr(operators[i], ch) == 0) {
 			match = 1;
 			break;
 		}
@@ -134,7 +142,7 @@ bool isSeparator(char ch) {
 	int match = 0;
 
 	for (int i = 0; i < 13; i++) {
-		if (strcmp(separators[i], ch) == 0) {
+		if (strchr(separators[i], ch) == 0) {
 			match = 1;
 			break;
 		}
