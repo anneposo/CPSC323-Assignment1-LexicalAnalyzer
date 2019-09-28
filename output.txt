@@ -7,3 +7,4 @@ INTEGER 	=	 999
 IDENTIFIER 	=	 number$
 REAL NUMBER 	=	 123.45
 KEYWORD 	=	 forend
+COMMENT 	=	 ! this is a comment !

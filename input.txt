@@ -1,3 +1,4 @@
 int 123 test for
 num1 999 number$
 123.45 forend
+! this is a comment !
