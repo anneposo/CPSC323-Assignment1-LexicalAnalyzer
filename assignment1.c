@@ -126,35 +126,44 @@ void lexer(void) {
 					break;
 				}
 
-			if (currentState == ID_END) {  // accepting state for identifiers/keywords
-		//		if (isSeparator(ch) || isOperator(ch)) {
+			if (currentState == ID_END || currentState == INT_END || currentState == REAL_END || currentState == END_COMMENT) {  // final accepting states
 					buffer[i] = '\0';
-					if(isKeyword(buffer)) { //check if string is a keyword or identifier
-						printToken(outputPtr, "KEYWORD", buffer);
-					} else { printToken(outputPtr, "IDENTIFIER", buffer); } // call printToken to print token and lexeme to output file
+					if (currentState == ID_END) {
+						if(isKeyword(buffer)) { //check if string is a keyword or identifier
+							printToken(outputPtr, "KEYWORD", buffer);
+						} else { printToken(outputPtr, "IDENTIFIER", buffer); } // call printToken to print token and lexeme to output file
+					}
+					else if (currentState == INT_END) {
+						printToken(outputPtr, "INTEGER", buffer);
+					}
+					else if (currentState == REAL_END) {
+						printToken(outputPtr, "REAL NUMBER", buffer);
+					}
+					else if (currentState == END_COMMENT) {
+						printToken(outputPtr, "COMMENT", buffer);
+					}
 					currentState = START; 	// set state back to initial state
 					clearBuffer(buffer); // clears lexeme buffer
 					i = 0;
-		//		}
 			}
 
-			if (currentState == INT_END || currentState == REAL_END) {
-					buffer[i] = '\0';
-					if (currentState == INT_END) {
-						printToken(outputPtr, "INTEGER", buffer);
-					} else { printToken(outputPtr, "REAL NUMBER", buffer); }
-					currentState = START;
-					clearBuffer(buffer);
-					i = 0;
-			}
-
-			if (currentState == END_COMMENT) {
-				buffer[i] = '\0';
-				printToken(outputPtr, "COMMENT", buffer);
-				currentState = START;
-				clearBuffer(buffer);
-				i = 0;
-			}
+			// if (currentState == INT_END || currentState == REAL_END) {
+			// 		buffer[i] = '\0';
+			// 		if (currentState == INT_END) {
+			// 			printToken(outputPtr, "INTEGER", buffer);
+			// 		} else { printToken(outputPtr, "REAL NUMBER", buffer); }
+			// 		currentState = START;
+			// 		clearBuffer(buffer);
+			// 		i = 0;
+			// }
+			//
+			// if (currentState == END_COMMENT) {
+			// 	buffer[i] = '\0';
+			// 	printToken(outputPtr, "COMMENT", buffer);
+			// 	currentState = START;
+			// 	clearBuffer(buffer);
+			// 	i = 0;
+			// }
 
 		//elseif (isSeparator(ch)) {}
 
