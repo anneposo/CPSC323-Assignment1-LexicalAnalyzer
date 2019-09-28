@@ -14,8 +14,8 @@ bool isOperator(char);
 bool isSeparator(char);
 bool isKeyword(const char*);
 
-enum FsmState { START, ID_START, IN_ID, ID_END, KEYWORD_END, NUM_START, IN_NUM, IN_REAL, INT_END, REAL_END };
-//enum IdentifierState { ID_START, IN_ID, ID_END }; // 4 states for identifier FSM
+enum FsmState { START, ID_START, IN_ID, ID_END, KEYWORD_END, NUM_START, IN_NUM, IN_REAL, INT_END, REAL_END, COMMENT_START, IN_COMMENT, END_COMMENT };
+//enum IdentifierState { ID_START, IN_ID, ID_END }; // 3 states for identifier FSM
 //enum NumberState { NUM_START, IN_NUM, INT_END, IN_REAL, REAL_END }; // 5 states for integer and real FSM
 
 char buffer[BUFSIZE]; // holds the buffer of the current lexeme
@@ -67,43 +67,58 @@ void lexer(void) {
 				  if (isdigit(ch) > 0) {
 						currentState = NUM_START;
 					}
+					if (ch == '!') { // "!" signifies beginning/end of a comment
+						currentState = COMMENT_START;
+					}
 					break;
 
 				case ID_START: // 1 - initial identifier state - can go to 2nd state
-					currentState = IN_ID;
 					buffer[i++] = ch;
+					currentState = IN_ID;
 					break;
 
 				case IN_ID: // state 2 - can go back to 2 or to ID end accepting state
 					if (isalpha(ch) > 0 || isdigit(ch) > 0 || ch == '$') {
-						currentState = IN_ID;
 						buffer[i++] = ch;
+						currentState = IN_ID;
 					}
 					else { currentState = ID_END; }
 					break;
 
 				case NUM_START: // 3 - initial number state - can go to 4th state in number
-					currentState = IN_NUM;
 					buffer[i++] = ch;
+					currentState = IN_NUM;
 					break;
 
 				case IN_NUM: // state 4 - can go back to state 4, or state 5 in real number, or state 7 in int end
 					if (isdigit(ch) > 0) {
-						currentState = IN_NUM;
 						buffer[i++] = ch;
+						currentState = IN_NUM;
 					}
 					else if(ch == '.') {
-						currentState = IN_REAL;
 						buffer[i++] = ch;
+						currentState = IN_REAL;
 					}
 					else { currentState = INT_END; }
 					break;
 
 				case IN_REAL: // state 5 - can go back to state 5 or state 8 real number end
 					if (isdigit(ch) > 0) {
-						currentState = IN_REAL;
 						buffer[i++] = ch;
+						currentState = IN_REAL;
 					} else { currentState = REAL_END; }
+					break;
+
+				case COMMENT_START:
+					buffer[i++] = ch;
+					currentState = IN_COMMENT;
+					break;
+
+				case IN_COMMENT:
+					buffer[i++] = ch;
+					if (ch == '!') {
+						currentState = END_COMMENT;
+					}
 					break;
 
 				default:
@@ -131,7 +146,14 @@ void lexer(void) {
 					currentState = START;
 					clearBuffer(buffer);
 					i = 0;
-					continue;
+			}
+
+			if (currentState == END_COMMENT) {
+				buffer[i] = '\0';
+				printToken(outputPtr, "COMMENT", buffer);
+				currentState = START;
+				clearBuffer(buffer);
+				i = 0;
 			}
 
 		//elseif (isSeparator(ch)) {}
