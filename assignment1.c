@@ -8,7 +8,7 @@
 
 void printToken(FILE*, const char*, const char*);
 void clearBuffer(char*);
-void openFile(FILE*);
+void getFile(void);
 void lexer(void);
 bool isOperator(char);
 bool isSeparator(char);
@@ -19,6 +19,7 @@ enum IdentifierState { ID_START, IN_ID, ID_END }; // 4 states for identifier FSM
 enum NumberState { NUM_START, IN_NUM, INT_END, DECIMAL, REAL_END }; // 5 states for integer and real FSM
 
 char buffer[BUFSIZE]; // holds the buffer of the current lexeme
+char sourceCodeFile[BUFSIZE]; //holds filename of source code to scan with lexer program
 
 // printToken prints the input token and lexeme in table format to the fp pointing to the output text file
 void printToken(FILE* fp, const char* token, const char* lexeme) {
@@ -30,24 +31,22 @@ void clearBuffer(char* buf) {		//clearBuffer clears the buffer containing the cu
 	memset(buf, '\0', sizeof(buf));
 }
 
-void openFile(FILE* fp) {		// openFile opens file containing source code to test lexer
-	char sourceCodeFile[100];
-
+void getFile(void) {		// getFile gets filename of source code to test lexer
 	printf("Enter source code filename: ");
-	gets(sourceCodeFile);
-
-	fp = fopen(sourceCodeFile, "r");
-	if (fp == NULL) {
-		printf("Could not open file.\n");
-		exit(1);
-	} else { printf("Opened %s successfully.\n\n", sourceCodeFile); }
+	fgets(sourceCodeFile, sizeof(sourceCodeFile), stdin);
+  sourceCodeFile[strcspn(sourceCodeFile, "\n")] = '\0'; // removes newline from user input
 }
 
 void lexer(void) {
 	FILE* fp;
 	FILE* outputPtr;
 	outputPtr = fopen("output.txt", "w"); // open output file with write permissions
-	openFile(fp); //opens source code file to scan with lexer
+	getFile(); //opens source code file to scan with lexer
+	fp = fopen(sourceCodeFile, "r");
+	if (fp == NULL) {
+		printf("Could not open file.\n");
+		exit(1);
+	} else { printf("Opened %s successfully.\n\n", sourceCodeFile); }
 
 	enum IdentifierState currentIdState = ID_START;
 	enum NumberState currentNumState = NUM_START;
