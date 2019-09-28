@@ -1,3 +1,9 @@
 KEYWORD 	=	 int
-IDENTIFIER 	=	 test
 INTEGER 	=	 123
+IDENTIFIER 	=	 test
+KEYWORD 	=	 for
+IDENTIFIER 	=	 num1
+INTEGER 	=	 999
+IDENTIFIER 	=	 number$
+REAL NUMBER 	=	 123.45
+KEYWORD 	=	 forend
