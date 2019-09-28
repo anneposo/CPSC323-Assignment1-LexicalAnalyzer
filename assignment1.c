@@ -25,6 +25,7 @@ char sourceCodeFile[BUFSIZE]; //holds filename of source code to scan with lexer
 void printToken(FILE* fp, const char* token, const char* lexeme) {
 	fprintf(fp, "%s \t=\t ", token);
 	fprintf(fp, "%s\n", lexeme);
+	printf("Recorded token and corresponding lexeme to output.txt file.\n");
 }
 
 void clearBuffer(char* buf) {		//clearBuffer clears the buffer containing the current lexeme
@@ -72,21 +73,33 @@ void lexer(void) {
 					} else { currentIdState = ID_END; }
 					break;
 
-				case ID_END: // accepting state for identifiers
-					if (isSeparator(ch) || isOperator(ch)) {
-						buffer[i] = '\0';
-						if(isKeyword(buffer)) {
-							printToken(outputPtr, "KEYWORD", buffer);
-						} else { printToken(outputPtr, "IDENTIFIER", buffer); } // call printToken to print token and lexeme to output file
-						currentIdState = ID_START; 	// set state back to initial state
-						clearBuffer(buffer); // clears lexeme buffer
-					}
-					break;
+				// case ID_END: // accepting state for identifiers
+				// 	if (isSeparator(ch) || isOperator(ch)) {
+				// 		buffer[i] = '\0';
+				// 		if(isKeyword(buffer)) {
+				// 			printToken(outputPtr, "KEYWORD", buffer);
+				// 		} else { printToken(outputPtr, "IDENTIFIER", buffer); } // call printToken to print token and lexeme to output file
+				// 		currentIdState = ID_START; 	// set state back to initial state
+				// 		clearBuffer(buffer); // clears lexeme buffer
+				// 	}
+				// 	break;
 
 				default:
 					printf("Error: invalid state.\n");
 					break;
 			}
+
+			if (currentIdState == ID_END) {
+				if (isSeparator(ch) || isOperator(ch)) {
+					buffer[i] = '\0';
+					if(isKeyword(buffer)) {
+						printToken(outputPtr, "KEYWORD", buffer);
+					} else { printToken(outputPtr, "IDENTIFIER", buffer); } // call printToken to print token and lexeme to output file
+					currentIdState = ID_START; 	// set state back to initial state
+					clearBuffer(buffer); // clears lexeme buffer
+					i = 0;
+			}
+		}
 		//}
 
 		// elseif(isdigit(ch) > 0) { 				//***************** FSM for numbers - integer or real
@@ -163,23 +176,8 @@ bool isKeyword(const char* buf) {
 
 
 int main(void) {
-// 	char sourceCodeFile[50];
-// 	char buffer[999];
-// 	FILE *fp;
-//
-//
-// 	// Get name of file to open to test lexer
-// 	printf("Enter source code filename: ");
-// 	gets(sourceCodeFile);
-//
-// 	// Open file to read source code
-// 	fp = fopen(sourceCodeFile, "r");
-// 	if (fp == NULL) { printf("Could not open file.\n"); exit(0); }
-//
-// //	Read the file and put first line of source code into buffer string
-// 	fgets(buffer, sizeof(buffer), fp);
-//
-// 	printf("%s", buffer);
+	lexer();
+	printf("Finished.\n");
 
 	return 0;
 }
