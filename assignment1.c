@@ -16,7 +16,7 @@ bool isKeyword(const char*);
 
 //enum FsmState { START, ID_BEGIN, ID_INSIDE, ID_END, KEYWORD_END, NUM_BEGIN, NUM_INSIDE, INT_END, REAL_END };
 enum IdentifierState { ID_START, IN_ID, ID_END }; // 4 states for identifier FSM
-enum NumberState { NUM_START, IN_NUM, INT_END, DECIMAL, REAL_END }; // 5 states for integer and real FSM
+enum NumberState { NUM_START, IN_NUM, INT_END, IN_REAL, REAL_END }; // 5 states for integer and real FSM
 
 char buffer[BUFSIZE]; // holds the buffer of the current lexeme
 char sourceCodeFile[BUFSIZE]; //holds filename of source code to scan with lexer program
@@ -56,7 +56,7 @@ void lexer(void) {
 
 	// use switch statement for FSM.
 	while ((ch = fgetc(fp)) != EOF) {
-			if((isalnum(ch) > 0) || currentIdState == IN_ID) {		//**************************** FSM for identifiers and keywords
+			if((isalpha(ch) > 0) || currentIdState == IN_ID) {		//**************************** FSM for identifiers and keywords
 			switch (currentIdState) {
 
 				case ID_START: // initial identifier state - can go to 1st state
@@ -64,8 +64,9 @@ void lexer(void) {
 					buffer[i++] = ch;
 					break;
 
+
 				case IN_ID: // state 1 - can go back to 1 or to end
-					if (isalnum(ch) > 0) {
+					if (isalpha(ch) > 0) {
 						currentIdState = IN_ID;
 						buffer[i++] = ch;
 					} else { currentIdState = ID_END; }
@@ -82,7 +83,7 @@ void lexer(void) {
 				// 	}
 				// 	break;
 				default:
-					printf("Error: invalid state.\n");
+					printf("Error: invalid identifier state.\n");
 					break;
 				}
 			}
@@ -98,36 +99,47 @@ void lexer(void) {
 				}
 			 }
 
-	 	 	  else if((isdigit(ch) > 0) || currentNumState == IN_NUM) { 				//***************** FSM for numbers - integer or real
+			 //***************** FSM for numbers - integer or real
+	 	 	  else if((isdigit(ch) > 0) || currentNumState == IN_NUM || currentNumState == IN_REAL) {
 	 				switch (currentNumState) {
 						case NUM_START: // initial number state - can go to 1st state
 							currentNumState = IN_NUM;
 							buffer[i++] = ch;
 							break;
 
-						case IN_NUM: // state 1 - can go back to state 1, or state 2 integer, or state 3 decimal, or state 4 real number
+						case IN_NUM: // state 1 - can go back to state 1, or state 2 integer, or state 3 in real number
+							if (isdigit(ch) > 0) {
+								currentNumState = IN_NUM;
+								buffer[i++] = ch;
+							}
+							else if(ch == '.') {
+								currentNumState = IN_REAL;
+								buffer[i++] = ch;
+							}
+							else { currentNumState = INT_END; }
 							break;
 
-						// case INT_END:
-						// 	break;
-
-						case DECIMAL: // state 3 - can go to state 1 inside number or state 4 real number accepting state
+						case IN_REAL: // state 3 - can go to state 4 real number end
+							if (isdigit(ch) > 0) {
+								currentNumState = IN_REAL;
+								buffer[i++] = ch;
+							} else { currentNumState = REAL_END; }
 							break;
-
-						// case REAL_END:
-						// 	break;
 
 						default:
 							printf("Error: invalid number state.\n");
 						  break;
 					}
 				}
-				if (currentNumState == INT_END) {
-					
-				}
 
-				if (currentNumState == REAL_END) {
-
+				if (currentNumState == INT_END || currentNumState == REAL_END) {
+						buffer[i] = '\0';
+						if (currentNumState == INT_END) {
+							printToken(outputPtr, "INTEGER", buffer);
+						} else { printToken(outputPtr, "REAL", buffer); }
+						currentNumState = NUM_START;
+						clearBuffer(buffer);
+						i = 0;
 				}
 
 		//elseif (isSeparator(ch)) {}
