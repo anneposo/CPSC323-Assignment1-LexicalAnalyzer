@@ -15,7 +15,7 @@ bool isSeparator(char);
 bool isKeyword(const char*);
 
 //enum FsmState { START, ID_BEGIN, ID_INSIDE, ID_END, KEYWORD_END, NUM_BEGIN, NUM_INSIDE, INT_END, REAL_END };
-enum IdentifierState { ID_START, IN_ID, ID_END, KEYWORD_END, }; // 4 states for identifier FSM
+enum IdentifierState { ID_START, IN_ID, ID_END }; // 4 states for identifier FSM
 enum NumberState { NUM_START, IN_NUM, INT_END, DECIMAL, REAL_END }; // 5 states for integer and real FSM
 
 char buffer[BUFSIZE]; // holds the buffer of the current lexeme
@@ -45,7 +45,9 @@ void openFile(FILE* fp) {		// openFile opens file containing source code to test
 
 void lexer(void) {
 	FILE* fp;
-	openFile(fp); //opens source code file
+	FILE* outputPtr;
+	outputPtr = fopen("output.txt", "w"); // open output file with write permissions
+	openFile(fp); //opens source code file to scan with lexer
 
 	enum IdentifierState currentIdState = ID_START;
 	enum NumberState currentNumState = NUM_START;
@@ -54,7 +56,7 @@ void lexer(void) {
 
 	// use switch statement for FSM.
 	while ((ch = fgetc(fp)) != EOF) {
-		if(isalnum(ch) > 0) {										//**************************** FSM for identifiers and keywords
+	//	if(isalnum(ch) > 0) {										//**************************** FSM for identifiers and keywords
 			switch (currentIdState) {
 
 				case ID_START: // initial state - can go to 1st state or end
@@ -75,24 +77,18 @@ void lexer(void) {
 					if (isSeparator(ch) || isOperator(ch)) {
 						buffer[i] = '\0';
 						if(isKeyword(buffer)) {
-							currentIdState = KEYWORD_END;
-						} else {
-							 printToken(fp, "IDENTIFIER", buffer);  // call printToken to print token and lexeme to output file
-							 currentIdState = ID_START;			// set state back to initial state
-						}
+							printToken(outputPtr, "KEYWORD", buffer);
+						} else { printToken(outputPtr, "IDENTIFIER", buffer); } // call printToken to print token and lexeme to output file
+						currentIdState = ID_START; 	// set state back to initial state
+						clearBuffer(buffer); // clears lexeme buffer
 					}
-					break;
-
-				case KEYWORD_END: // accepting state for keywords
-					printToken(fp, "KEYWORD", buffer);  // call printToken to print token and lexeme to output file
-					currentIdState = ID_START;  // set state back to initial state
 					break;
 
 				default:
 					printf("Error: invalid state.\n");
 					break;
 			}
-		}
+		//}
 
 		// elseif(isdigit(ch) > 0) { 				//***************** FSM for numbers - integer or real
 		// 	switch (currentNumState) {
@@ -121,7 +117,8 @@ void lexer(void) {
 
 	} //while loop end bracket
 
-	fclose(fp); //close file after while loop executes
+	fclose(fp); //close files after while loop executes
+	fclose(outputPtr);
 }
 
 bool isOperator(char ch) {
