@@ -1,2 +1,0 @@
-! this is a comment!
-int num1, num2, large$
