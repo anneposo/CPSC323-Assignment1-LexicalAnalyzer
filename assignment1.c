@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <ctype.h> // for isalnum() and isdigit()
+#include <ctype.h> // for isalpha() and isdigit()
 
 #define BUFSIZE 100
 
@@ -50,8 +50,8 @@ void getFile(void) {		// getFile gets filename of source code to test lexer
 
 // parses through input source file and generates tokens for lexemes
 void lexer(void) {
-	FILE* fp;
-	FILE* outputPtr;
+	FILE* fp; // file pointer to input source code file
+	FILE* outputPtr; // file pointer to output text file
 	outputPtr = fopen("output.txt", "w"); // open output file with write permissions
 	getFile(); //opens source code file to scan with lexer
 	fp = fopen(sourceCodeFile, "r");
@@ -66,6 +66,9 @@ void lexer(void) {
 	int i = 0; //index for buffer
 	int j = 0; //index for symBuf
 	char ch;
+
+	fprintf(outputPtr, "TOKENS \t\t\t LEXEMES\n"); // table header
+	fprintf(outputPtr, "---------------------------------------------\n");
 
 	while ((ch = fgetc(fp)) != EOF) { // while not at end of source file
 
@@ -250,7 +253,6 @@ bool isKeyword(const char* buf) {
 			break;
 		}
 	}
-
 	return match;
 }
 
