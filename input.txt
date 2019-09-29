@@ -1,4 +1,2 @@
-int 123 test for
-num1 999 number$
-123.45 forend
-! this is a comment !
+! this is a comment!
+int num1, num2, large$

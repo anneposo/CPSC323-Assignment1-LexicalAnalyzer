@@ -1,10 +1,26 @@
+COMMENT 	=	 ! Find largest value between two numbers!
 KEYWORD 	=	 int
-INTEGER 	=	 123
-IDENTIFIER 	=	 test
-KEYWORD 	=	 for
 IDENTIFIER 	=	 num1
-INTEGER 	=	 999
-IDENTIFIER 	=	 number$
-REAL NUMBER 	=	 123.45
-KEYWORD 	=	 forend
-COMMENT 	=	 ! this is a comment !
+SEPARATOR 	=	 ,
+IDENTIFIER 	=	 num2
+SEPARATOR 	=	 ,
+IDENTIFIER 	=	 large$
+KEYWORD 	=	 if
+SEPARATOR 	=	 (
+IDENTIFIER 	=	 num1
+OPERATOR 	=	 >
+IDENTIFIER 	=	 num2
+SEPARATOR 	=	 )
+SEPARATOR 	=	 {
+IDENTIFIER 	=	 large
+OPERATOR 	=	 =
+IDENTIFIER 	=	 num1$
+SEPARATOR 	=	 ;
+SEPARATOR 	=	 }
+KEYWORD 	=	 else
+SEPARATOR 	=	 {
+IDENTIFIER 	=	 large
+OPERATOR 	=	 =
+IDENTIFIER 	=	 num2$
+SEPARATOR 	=	 ;
+SEPARATOR 	=	 }
