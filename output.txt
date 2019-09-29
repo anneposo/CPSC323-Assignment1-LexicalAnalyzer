@@ -1,3 +1,5 @@
+TOKENS 			 LEXEMES
+---------------------------------------------
 COMMENT 	=	 ! Find largest value between two numbers!
 KEYWORD 	=	 int
 IDENTIFIER 	=	 num1
