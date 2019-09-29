@@ -1,3 +1,8 @@
+// Anne Poso
+// CWID 889236576
+// CPSC 323-03 Assignment 1
+// Lexical Analyzer
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -258,9 +263,7 @@ bool isKeyword(const char* buf) {
 
 
 int main(void) {
-
 	lexer();
-	printf("\nFinished.\n");
-
+	printf("\nFinished lexical analysis. Results found in output.txt.\n");
 	return 0;
 }
