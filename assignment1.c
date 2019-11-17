@@ -104,8 +104,14 @@ void lexer(void) {
 					break;
 
 				case ID_START: // 1 - initial identifier state - can only go to 2nd state
-					buffer[i++] = ch;
-					currentState = IN_ID;
+					if (isSeparator(ch) || isOperator(ch)) {
+						symBuf = ch; // for encountering separators/operators at ends of identifiers with no space separator ( i.e. x=a )
+						currentState = ID_END;
+					}
+					else {
+						buffer[i++] = ch;
+						currentState = IN_ID;
+					}
 					break;
 
 				case IN_ID: // state 2 - can go back to 2 or to state 3 ID end accepting state
